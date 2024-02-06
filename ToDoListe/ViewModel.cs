@@ -21,7 +21,6 @@ namespace ViewModel
 
         public class Saves
         {
-
             public string MyTask;
             public bool Erledigt;
             public int Platzierung;
@@ -98,7 +97,6 @@ namespace ViewModel
         {
             var meineAufgaben = new List<Saves> { };
             var options = new JsonSerializerOptions() { IncludeFields = true, };
-            // Aufgabenliste aus der Ui durchgehen und einzelne Aufgaben übernehmen
             foreach (CheckBox aufgabe in _checkbox)
             {
                 var newItem = new Saves();
