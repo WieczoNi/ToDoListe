@@ -19,7 +19,7 @@ namespace ToDoListe
         public MainWindow()
         {
             InitializeComponent();
-            aufgaben.Items.SortDescriptions.Add(new SortDescription("TabIndex", ListSortDirection.Ascending));
+            aufgaben.Items.SortDescriptions.Add(new SortDescription("TabIndex", ListSortDirection.Ascending)); //Bestimmt die Sortierung der ListBox. Kann man zwar theoretisch auch durch Umwege im ViewModel erzielen, aber das wäre nicht sehr effizient
         }
     }
 }
