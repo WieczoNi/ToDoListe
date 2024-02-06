@@ -24,8 +24,9 @@
                 <RowDefinition Height="175*"/>
             </Grid.RowDefinitions>
             <ListBox x:Name="aufgaben" Margin="10,17,10,51" Background="Gainsboro" BorderBrush="#FF1F1F1F" Grid.RowSpan="5" Grid.ColumnSpan="2" ItemsSource="{Binding Checkboxes}"/>
-            <TextBox x:Name="inhalt" Margin="0,0,208,10" TextWrapping="Wrap" Text="{Binding aufgabeTextbox, NotifyOnTargetUpdated=True, Mode=OneWayToSource}" BorderBrush="#FF121212" Background="Gainsboro" FontSize="23" Height="36" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="359" Grid.Row="4" Grid.ColumnSpan="2"/>
-            <Button x:Name="eintragen" Content="Eintragen" Command="{Binding AddNewTask}" Margin="0,0,10,10" RenderTransformOrigin="0.682,1.198" FontSize="22" Height="36" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="179" Grid.Row="4" Grid.Column="1"/>
+            <TextBox x:Name="inhalt" Margin="0,0,92,10" TextWrapping="Wrap" Text="{Binding aufgabeTextbox, NotifyOnTargetUpdated=True, Mode=OneWayToSource}" BorderBrush="#FF121212" Background="Gainsboro" FontSize="23" Height="36" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="267" Grid.Row="4"/>
+            <Button x:Name="eintragen" Content="Eintragen" Command="{Binding AddNewTask}" Margin="0,0,10,10" RenderTransformOrigin="0.682,1.198" FontSize="22" Height="36" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="112" Grid.Row="4" Grid.Column="1"/>
+            <Button Content="Erledigtes Entfernen" Command="{Binding DelDoneTasks}" Margin="0,0,138,10" Grid.Row="4" Grid.ColumnSpan="2" FontSize="16" Height="36" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="145"/>
         </Grid>
 
     </Grid>

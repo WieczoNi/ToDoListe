@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -109,7 +110,24 @@ namespace ViewModel
 
             File.WriteAllText(@"path.json", serial);
         }
+        private void PerformDelDoneTasks()
+        {
+            int durchgang = 0;
+            List<int> delList = new List<int> { };
+            foreach (CheckBox item in _checkbox)
+            {
 
+                if (item.IsChecked == true)
+                {
+                    delList.Add(item.TabIndex);
+                    
+                }
+                else { durchgang++; }
+            }
+            _checkbox.RemoveAll(r => delList.Any(a => a == r.TabIndex));
+            RaisePropertyChanged("Checkboxes");
+            SaveTaskList();
+        }
         private void Umsortieren()
         {
             int anzahl = 0;
@@ -131,6 +149,19 @@ namespace ViewModel
         }
 
         private RelayCommand addNewTask;
+        private RelayCommand delDoneTasks;
+        public ICommand DelDoneTasks
+        {
+            get
+            {
+                if (delDoneTasks == null)
+                {
+                    delDoneTasks = new RelayCommand(PerformDelDoneTasks);
+                }
+
+                return delDoneTasks;
+            }
+        }
 
         public ICommand AddNewTask
         {
