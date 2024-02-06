@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+
 namespace ViewModel
 {
 
@@ -27,18 +28,10 @@ namespace ViewModel
             public int Platzierung;
         }
 
-
-        private string _inhalt;
-
-        public string inhalt
-        {
-            get { return _inhalt; }
-            set { _inhalt = inhalt; }
-        }
-        private List<CheckBox> _checkbox = new List<CheckBox> { };
+        private List<CheckBox> _checkbox = new List<CheckBox> { }; 
 
 
-        public ObservableCollection<CheckBox> Checkboxes
+        public ObservableCollection<CheckBox> Checkboxes //private Liste _checkbox muss in öffentliche ObservableCollection umgewandelt werden, welche an die ListBox gebunden ist. tempBox ist hierbwi nur ein proxy
         {
             get
             {
@@ -71,12 +64,12 @@ namespace ViewModel
             if (File.Exists(@"path.json"))
             {
                 string savesJson = File.ReadAllText(@"path.json");
-                var option = new JsonSerializerOptions() { IncludeFields = true };
+                var option = new JsonSerializerOptions() { IncludeFields = true }; //Im CodeBehind funktioniert das auch ohne die var option
                 meineAufgaben = JsonSerializer.Deserialize<List<Saves>>(savesJson, option);
+
                 foreach (Saves savedItems in meineAufgaben)
                 {
                     CheckBox newItem = new CheckBox();
-
                     newItem.Content = savedItems.MyTask;
                     newItem.IsChecked = savedItems.Erledigt;
                     newItem.TabIndex = savedItems.Platzierung;
@@ -110,24 +103,7 @@ namespace ViewModel
 
             File.WriteAllText(@"path.json", serial);
         }
-        private void PerformDelDoneTasks()
-        {
-            int durchgang = 0;
-            List<int> delList = new List<int> { };
-            foreach (CheckBox item in _checkbox)
-            {
-
-                if (item.IsChecked == true)
-                {
-                    delList.Add(item.TabIndex);
-                    
-                }
-                else { durchgang++; }
-            }
-            _checkbox.RemoveAll(r => delList.Any(a => a == r.TabIndex));
-            RaisePropertyChanged("Checkboxes");
-            SaveTaskList();
-        }
+        
         private void Umsortieren()
         {
             int anzahl = 0;
@@ -142,14 +118,13 @@ namespace ViewModel
                     aufgabe.TabIndex = anzahl;
                     anzahl++;
                 }
-
-
             }
             RaisePropertyChanged("Checkboxes");
         }
 
         private RelayCommand addNewTask;
         private RelayCommand delDoneTasks;
+        private RelayCommand delAllTasks;
         public ICommand DelDoneTasks
         {
             get
@@ -160,6 +135,18 @@ namespace ViewModel
                 }
 
                 return delDoneTasks;
+            }
+        }
+        public ICommand DelAllTasks
+        {
+            get
+            {
+                if (delAllTasks == null)
+                {
+                    delAllTasks = new RelayCommand(PerformDelAllTasks);
+                }
+
+                return delAllTasks;
             }
         }
 
@@ -189,6 +176,30 @@ namespace ViewModel
             Umsortieren();
             SaveTaskList();
             RaisePropertyChanged("Checkboxes");
+        }
+        private void PerformDelDoneTasks()
+        {
+            List<int> delList = new List<int> { };
+            foreach (CheckBox item in _checkbox)
+            {
+
+                if (item.IsChecked == true)
+                {
+                    delList.Add(item.TabIndex);
+
+                }
+            }
+            _checkbox.RemoveAll(r => delList.Any(a => a == r.TabIndex));
+            RaisePropertyChanged("Checkboxes");
+            SaveTaskList();
+        }
+        private void PerformDelAllTasks()
+        {
+            
+            _checkbox.Clear();
+            RaisePropertyChanged("Checkboxes");
+            SaveTaskList();
+            
         }
     }
 }
