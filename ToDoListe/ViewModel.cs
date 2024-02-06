@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,6 +9,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace ViewModel
 {
@@ -112,11 +114,15 @@ namespace ViewModel
                 if (aufgabe.IsChecked == true)
                 {
                     aufgabe.TabIndex = aufgabe.TabIndex + _checkbox.Count;
+                    aufgabe.Foreground = Brushes.DarkGray;
+                    aufgabe.Background = Brushes.DarkGray;
                 }
                 else
                 {
                     aufgabe.TabIndex = anzahl;
                     anzahl++;
+                    aufgabe.Foreground = Brushes.Black;
+                    aufgabe.Background = Brushes.Gainsboro;
                 }
             }
             RaisePropertyChanged("Checkboxes");
