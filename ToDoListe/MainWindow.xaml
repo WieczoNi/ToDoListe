@@ -32,15 +32,6 @@
                 <RowDefinition Height="175*"/>
             </Grid.RowDefinitions>
 
-            <ListBox x:Name="aufgaben" 
-                     Margin="10,17,10,51" 
-                     Background="Gainsboro" 
-                     BorderBrush="#FF1F1F1F" 
-                     Grid.RowSpan="5" 
-                     Grid.ColumnSpan="2" 
-                     ItemsSource="{Binding Checkboxes}" 
-                     Cursor="Arrow"/>
-
             <TextBox x:Name="inhalt" 
                      Margin="0,0,192,10" 
                      TextWrapping="Wrap" 
@@ -90,7 +81,24 @@
                     FontSize="20" 
                     Background="#FFEC7A7A"
                     Cursor="Hand"/>
-
+            <ListBox x:Name="aufgaben" 
+                   Margin="10,17,10,51" 
+                   Background="Gainsboro" 
+                   BorderBrush="#FF1F1F1F" 
+                   Grid.RowSpan="5" 
+                   Grid.ColumnSpan="2" 
+                   ItemsSource="{Binding Checkboxes}" 
+                   Cursor="Arrow">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox Content="{Binding MyTask}" 
+                                  IsChecked="{Binding Erledigt}" 
+                                  TabIndex="{Binding TabIndex}" 
+                                  Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.Angehakt}"
+                                  FontSize="18" Cursor=""/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
         </Grid>
     </Grid>
 </Window>

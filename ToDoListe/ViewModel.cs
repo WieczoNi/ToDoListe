@@ -21,24 +21,26 @@ namespace ViewModel
         {
             ReadSavedTasks();
         }
+         
+    
 
 
         public class Saves
         {
-            public string MyTask;
-            public bool Erledigt;
-            public int Platzierung;
+            public object MyTask {  get; set; }
+            public bool Erledigt {  get; set; }
+            public int TabIndex {  get; set; }
         }
 
-        private List<CheckBox> _checkbox = new List<CheckBox> { }; 
+        private List<Saves> _checkbox = new List<Saves> { };
 
 
-        public ObservableCollection<CheckBox> Checkboxes //private Liste _checkbox muss in öffentliche ObservableCollection umgewandelt werden, welche an die ListBox gebunden ist. tempBox ist hierbei nur ein proxy
+        public ObservableCollection<Saves> Checkboxes 
         {
             get
             {
-                ObservableCollection<CheckBox> tempBox = new ObservableCollection<CheckBox>();
-                foreach (CheckBox item in _checkbox)
+                ObservableCollection<Saves> tempBox = new ObservableCollection<Saves>();
+                foreach (Saves item in _checkbox)
                 {
                     tempBox.Add(item);
                 }
@@ -47,10 +49,9 @@ namespace ViewModel
             set { Checkboxes = value; }
         }
 
-        //Bereitstellung der nötigen Property changed Aufrufe, standartmäßig in INotifyPropertyChanged enthalten
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private void RaisePropertyChanged(string propertyName) 
+        private void RaisePropertyChanged(string propertyName)
         {
             // take a copy to prevent thread issues
             PropertyChangedEventHandler handler = PropertyChanged;
@@ -65,69 +66,62 @@ namespace ViewModel
             List<Saves> meineAufgaben = new List<Saves>();
             if (File.Exists(@"path.json"))
             {
-                string savesJson = File.ReadAllText(@"path.json"); //Liest die in path.json gespeicherten werte ab, und schreibt sie in die Liste meineAufgaben
-                var option = new JsonSerializerOptions() { IncludeFields = true }; //Im CodeBehind funktioniert das auch ohne die var option
+                string savesJson = File.ReadAllText(@"path.json"); 
+                var option = new JsonSerializerOptions() { IncludeFields = true }; 
                 meineAufgaben = JsonSerializer.Deserialize<List<Saves>>(savesJson, option);
 
-                foreach (Saves savedItems in meineAufgaben) //Die Liste wird in Check boxen umgewandelt, und anschließend _checkbox angehangen.
+                foreach (Saves savedItems in meineAufgaben)
                 {
-                    CheckBox newItem = new CheckBox();
-                    newItem.Content = savedItems.MyTask;
-                    newItem.IsChecked = savedItems.Erledigt;
-                    newItem.TabIndex = savedItems.Platzierung;
-                    newItem.FontSize = 22;
-                    newItem.Click += CheckBox_Checked;
+                    Saves newItem = new Saves();
+                    newItem = savedItems;
                     _checkbox.Add(newItem);
                     RaisePropertyChanged("Checkboxes");
                 }
             }
             Umsortieren();
         }
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        private void PerformAngehakt()
         { Umsortieren(); SaveTaskList(); }
 
         private void SaveTaskList()
         {
             var meineAufgaben = new List<Saves> { }; 
             var options = new JsonSerializerOptions() { IncludeFields = true, };
-            foreach (CheckBox aufgabe in _checkbox) //schreibt alle Vorhandenen Checkboxen aus _checkbox in eine Liste, nach dem Format Saves. Wandelt also Checkboxen in <Saves> um.
+            foreach (Saves aufgabe in _checkbox)
             {
                 var newItem = new Saves();
-                newItem.Erledigt = aufgabe.IsChecked ?? false;
-                newItem.MyTask = aufgabe.Content.ToString();
-                newItem.Platzierung = aufgabe.TabIndex;
+                newItem = aufgabe;
                 meineAufgaben.Add(newItem);
             }
             string serial = JsonSerializer.Serialize<List<Saves>>(meineAufgaben, options);
 
-            File.WriteAllText(@"path.json", serial); //<Saves> Liste wird in path.json geschrieben
+            File.WriteAllText(@"path.json", serial); 
         }
         
         private void Umsortieren()
         {
             int anzahl = 0;
-            foreach (CheckBox aufgabe in _checkbox) //Gibt den Checkboxen aus _checkbox eine Nummerierung durch den TabIndex.
-            {                                       //angehakte Checkboxen erhalten den TabIndex Ihre platzierung + nummer an Items in der Liste
-                if (aufgabe.IsChecked == true)      //Ausserdem werden hier angekreuzte Checkboxen anders gefärbt
+            foreach (Saves aufgabe in _checkbox) 
+            {                                       
+                if (aufgabe.Erledigt == true)     
                 {
                     aufgabe.TabIndex = aufgabe.TabIndex + _checkbox.Count;
-                    aufgabe.Foreground = Brushes.DarkGray;
-                    aufgabe.Background = Brushes.DarkGray;
+                    
                 }
                 else
                 {
                     aufgabe.TabIndex = anzahl;
                     anzahl++;
-                    aufgabe.Foreground = Brushes.Black;
-                    aufgabe.Background = Brushes.Gainsboro;
                 }
             }
             RaisePropertyChanged("Checkboxes");
         }
 
-        private RelayCommand addNewTask;    //Folgendes sind die Ereignisfunktionen für alle 3 Knöpfe. Sie Rufen jeweil PerformDelDoneTasks, PerformAddNewTask oder PerformDelAllTasks auf
+        private RelayCommand addNewTask;    
         private RelayCommand delDoneTasks;
         private RelayCommand delAllTasks;
+        private RelayCommand angehakt;
+
         public ICommand DelDoneTasks
         {
             get
@@ -138,6 +132,18 @@ namespace ViewModel
                 }
 
                 return delDoneTasks;
+            }
+        }
+        public ICommand Angehakt
+        {
+            get
+            {
+                if (angehakt == null)
+                {
+                    angehakt = new RelayCommand(PerformAngehakt);
+                }
+
+                return angehakt;
             }
         }
         public ICommand DelAllTasks
@@ -167,28 +173,26 @@ namespace ViewModel
         }
         public string aufgabeTextbox { get; set; }
         
-        private void PerformAddNewTask()        //Eine neue Checkbox wird _checkbox hinzgefügt. aufgabeTextbox ist hierbei mit der Textbox aus der View im Modus OneWayToSource gebunden.
+        private void PerformAddNewTask()      
         {
             int anzahl = Checkboxes.Count;
             anzahl++;
-            CheckBox einzutragen = new CheckBox();
-            einzutragen.Content = aufgabeTextbox;
+            Saves einzutragen = new Saves();
+            einzutragen.MyTask = aufgabeTextbox;
             einzutragen.TabIndex = anzahl;
-            einzutragen.FontSize = 22;
-            einzutragen.Click += CheckBox_Checked;
             _checkbox.Add(einzutragen);
             Umsortieren();
             SaveTaskList();
             RaisePropertyChanged("Checkboxes");
         }
 
-        private void PerformDelDoneTasks() //Die Funktion geht alle Gegenstände in _checkbox durch. Alle mit gehakter CheckBox werden in eine Liste eingetragen, und mit .RemoveAll gelöscht  
+        private void PerformDelDoneTasks()  
         {
             List<int> delList = new List<int> { };
-            foreach (CheckBox item in _checkbox)
+            foreach (Saves item in _checkbox)
             {
 
-                if (item.IsChecked == true)
+                if (item.Erledigt == true)
                 {
                     delList.Add(item.TabIndex);
 
@@ -203,9 +207,8 @@ namespace ViewModel
         {
             
             _checkbox.Clear();
-            RaisePropertyChanged("Checkboxes");
             SaveTaskList();
-            
+            RaisePropertyChanged("Checkboxes");
         }
     }
 }
