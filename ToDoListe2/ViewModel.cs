@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Text.Json;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ToDoListe2;
@@ -67,10 +69,14 @@ namespace ViewModel
         {
         using var db = new DatabaseModels.SavesContext();
             {
-            _checkbox = db.mySaves.ToList<_saves.Saves>();
+            _checkbox = db.Saved.ToList<_saves.Saves>();
             Umsortieren();
             }
         }
+        foreach (_saves.Saves item in _checkbox)
+            {
+                item.Date = "0.0.0";
+            }
         }
         private void PerformAngehakt()
         {Umsortieren(); SaveTaskList();}
@@ -94,7 +100,7 @@ namespace ViewModel
             {
                 using var db = new DatabaseModels.SavesContext();
                 {
-                    foreach (_saves.Saves saves in db.mySaves)
+                    foreach (_saves.Saves saves in db.Saved)
                     {
                         db.Remove(saves);
                     }
@@ -195,10 +201,42 @@ namespace ViewModel
             }
         }
         public string aufgabeTextbox { get; set; }
+        public string selectedDate { get; set; }
         private void PerformLocalDB() //Wenn die Checkbox geklickt wird, setze _checkbox zurück, und lese von der Datenbank, sollte IsChecked == true, ansonsten lese von der JSON
         {
-            _checkbox.Clear();
-            ReadSavedTasks();
+            string messageBoxText = "Willst du deine Änderungen speichern?";
+            string caption = "Speichern";
+            MessageBoxButton button = MessageBoxButton.YesNo;
+            MessageBoxImage icon = MessageBoxImage.Warning;
+            MessageBoxResult result;
+
+            result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+            if (result == MessageBoxResult.Yes)
+            {
+                _checkbox.Clear();
+                ReadSavedTasks();
+
+            }
+            else
+            {
+                if (useDatabase != true)
+                {
+                    using var db = new DatabaseModels.SavesContext();
+                    {
+                        foreach (_saves.Saves saves in db.Saved)
+                        {
+                            db.Remove(saves);
+                        }
+                        db.SaveChanges();
+                    }
+                }
+                else
+                {
+                    File.WriteAllText(@"path.json", "[]"); 
+                }
+                _checkbox.Clear();
+                ReadSavedTasks();
+            }
         }
         private void PerformAddNewTask()
         {
@@ -207,6 +245,11 @@ namespace ViewModel
             _saves.Saves einzutragen = new _saves.Saves();
             einzutragen.MyTask = aufgabeTextbox;
             einzutragen.TabIndex = anzahl;
+            if (selectedDate != null)
+            {
+                einzutragen.Date = selectedDate;
+            }
+            else { einzutragen.Date = "Kein Zeitlimit"; }
             _checkbox.Add(einzutragen);
             Umsortieren();
             SaveTaskList();

@@ -7,10 +7,10 @@
         xmlns:ViewModel="clr-namespace:ViewModel" x:Class="ToDoListe2.MainWindow"
         mc:Ignorable="d"
         Title="ToDo-Liste" Height="450" Width="600" MinWidth="900" MinHeight="300" SizeToContent="Width" Opacity="1">
-
     <Window.DataContext>
         <ViewModel:ViewModel/>
     </Window.DataContext>
+    
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -33,7 +33,7 @@
             </Grid.RowDefinitions>
 
             <TextBox x:Name="inhalt" 
-                     Margin="0,0,257,10" 
+                     Margin="0,0,371,10" 
                      TextWrapping="Wrap" 
                      Text="{Binding aufgabeTextbox, NotifyOnTargetUpdated=True, Mode=OneWayToSource}" 
                      BorderBrush="#FF121212" 
@@ -41,14 +41,14 @@
                      FontSize="23" Height="36"
                      VerticalAlignment="Bottom" 
                      HorizontalAlignment="Right" 
-                     Width="309" 
+                     Width="195" 
                      Grid.Row="4" 
                      Cursor="IBeam"/>
 
             <Button x:Name="eintragen" 
                     Content="Eintragen" 
                     Command="{Binding AddNewTask}"
-                    Margin="0,0,128,10"
+                    Margin="0,0,10,10"
                     RenderTransformOrigin="0.682,1.198" 
                     FontSize="22" 
                     Height="36" 
@@ -99,8 +99,10 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <CheckBox Content="Lokale Datenbank" Margin="0,0,6,18" Grid.Row="4" Background="Gainsboro" Height="18" VerticalAlignment="Bottom" IsChecked="{Binding useDatabase, Mode=TwoWay}" Command="{Binding LocalDB}" HorizontalAlignment="Right" Width="117"/>
+            <CheckBox Content="Lokale Datenbank" Margin="0,0,253,-2" Grid.Row="4" Background="Gainsboro" Height="18" VerticalAlignment="Bottom" IsChecked="{Binding useDatabase, Mode=TwoWay}" Command="{Binding LocalDB}" HorizontalAlignment="Right" Width="117"/>
+            <DatePicker HorizontalAlignment="Right" Margin="0,0,241,22" Grid.Row="4" VerticalAlignment="Bottom" Background="#FFBDBDBD" Foreground="Black" BorderBrush="Black" FirstDayOfWeek="Monday" IsTodayHighlighted="True" SelectedDate="{Binding selectedDate, Mode=OneWayToSource}"/>
 
         </Grid>
     </Grid>
+
 </Window>

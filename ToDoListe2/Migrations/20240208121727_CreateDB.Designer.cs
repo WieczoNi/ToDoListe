@@ -10,7 +10,7 @@ using ToDoListe2;
 namespace ToDoListe2.Migrations
 {
     [DbContext(typeof(DatabaseModels.SavesContext))]
-    [Migration("20240208081621_CreateDB")]
+    [Migration("20240208121727_CreateDB")]
     partial class CreateDB
     {
         /// <inheritdoc />
@@ -25,6 +25,10 @@ namespace ToDoListe2.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Date")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("Erledigt")
                         .HasColumnType("INTEGER");
 
@@ -37,7 +41,7 @@ namespace ToDoListe2.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("mySaves");
+                    b.ToTable("Saved");
                 });
 #pragma warning restore 612, 618
         }

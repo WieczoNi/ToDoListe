@@ -11,18 +11,19 @@ namespace ToDoListe2.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "mySaves",
+                name: "Saved",
                 columns: table => new
                 {
                     ID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     MyTask = table.Column<string>(type: "TEXT", nullable: false),
                     Erledigt = table.Column<bool>(type: "INTEGER", nullable: false),
-                    TabIndex = table.Column<int>(type: "INTEGER", nullable: false)
+                    TabIndex = table.Column<int>(type: "INTEGER", nullable: false),
+                    Date = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_mySaves", x => x.ID);
+                    table.PrimaryKey("PK_Saved", x => x.ID);
                 });
         }
 
@@ -30,7 +31,7 @@ namespace ToDoListe2.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "mySaves");
+                name: "Saved");
         }
     }
 }
