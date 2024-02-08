@@ -16,7 +16,6 @@ using ToDoListe2;
 using Z.BulkOperations;
 namespace ViewModel
 {
-
     public class ViewModel : ViewBase, INotifyPropertyChanged
     {
         
@@ -25,7 +24,7 @@ namespace ViewModel
             ReadSavedTasks();
         }
 
-        public bool useDatabase = true;
+        public bool useDatabase { get; set; }
 
         
 
@@ -74,7 +73,6 @@ namespace ViewModel
                     _saves.Saves newItem = new _saves.Saves();
                     newItem = savedItems;
                     _checkbox.Add(newItem);
-                    RaisePropertyChanged("Checkboxes");
                 }
             }
             Umsortieren();
@@ -84,7 +82,6 @@ namespace ViewModel
                 using var db = new DatabaseModels.SavesContext();
                 {
                     _checkbox = db.mySaves.ToList<_saves.Saves>();
-                    RaisePropertyChanged("Checkboxes");
                     Umsortieren();
                 }
             }
@@ -120,7 +117,6 @@ namespace ViewModel
                         db.Add(item); 
                     }
                     db.SaveChanges();
-                    RaisePropertyChanged("Checkboxes");
                 }
             }
         }
@@ -149,6 +145,7 @@ namespace ViewModel
         private RelayCommand delDoneTasks;
         private RelayCommand delAllTasks;
         private RelayCommand angehakt;
+        private RelayCommand localDB;
 
         public ICommand DelDoneTasks
         {
@@ -160,6 +157,18 @@ namespace ViewModel
                 }
 
                 return delDoneTasks;
+            }
+        }
+        public ICommand LocalDB
+        {
+            get
+            {
+                if (localDB == null)
+                {
+                    localDB = new RelayCommand(PerformLocalDB);
+                }
+
+                return localDB;
             }
         }
         public ICommand Angehakt
@@ -200,6 +209,11 @@ namespace ViewModel
             }
         }
         public string aufgabeTextbox { get; set; }
+        private void PerformLocalDB()
+        {
+            _checkbox.Clear();
+            ReadSavedTasks();
+        }
 
         private void PerformAddNewTask()
         {
@@ -233,7 +247,6 @@ namespace ViewModel
 
         private void PerformDelAllTasks() //_checkbox wird geleert, und es wird gespeichert
         {
-
             _checkbox.Clear();
             SaveTaskList();
             RaisePropertyChanged("Checkboxes");
