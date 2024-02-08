@@ -20,7 +20,7 @@ namespace ToDoListe2
         public MainWindow()
         {
             InitializeComponent();
-            aufgaben.Items.SortDescriptions.Add(new SortDescription("TabIndex", ListSortDirection.Ascending));
+            aufgaben.Items.SortDescriptions.Add(new SortDescription("Date", ListSortDirection.Descending));
         }
     }
 }

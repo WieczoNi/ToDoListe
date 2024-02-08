@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
@@ -14,7 +15,9 @@ namespace ViewModel
     {
         public ViewModel()
         {
+            if (File.Exists(@"usedb.json")){ if (File.ReadAllText(@"usedb.json") == "true") { useDatabase = true; } else { useDatabase = false; } }
             ReadSavedTasks();
+            Erinnerung();
         }
         public bool useDatabase { get; set; } //Gebunden an die Checkbox im View
 
@@ -73,10 +76,6 @@ namespace ViewModel
             Umsortieren();
             }
         }
-        foreach (_saves.Saves item in _checkbox)
-            {
-                item.Date = "0.0.0";
-            }
         }
         private void PerformAngehakt()
         {Umsortieren(); SaveTaskList();}
@@ -119,12 +118,13 @@ namespace ViewModel
             foreach (_saves.Saves aufgabe in _checkbox)
             {
                 if (aufgabe.Erledigt == true)
+
                 {
                     aufgabe.TabIndex = aufgabe.TabIndex + _checkbox.Count;
+                    aufgabe.Date = "  Schon Fertig";
 
                 }
-                else
-                {
+                else {
                     aufgabe.TabIndex = anzahl;
                     anzahl++;
                 }
@@ -232,11 +232,19 @@ namespace ViewModel
                 }
                 else
                 {
-                    File.WriteAllText(@"path.json", "[]"); 
+                    if (File.Exists(@"path.json"))
+                    {
+                        File.Delete(@"path.json");
+                    }
                 }
                 _checkbox.Clear();
                 ReadSavedTasks();
             }
+
+            if(useDatabase == true) { File.WriteAllText(@"usedb.json", "true"); }
+            else { File.WriteAllText(@"usedb.json", "false"); }
+
+
         }
         private void PerformAddNewTask()
         {
@@ -247,9 +255,12 @@ namespace ViewModel
             einzutragen.TabIndex = anzahl;
             if (selectedDate != null)
             {
-                einzutragen.Date = selectedDate;
+                string[] pain = selectedDate.Split('/');
+                pain[2].Remove(2);
+                string refacDate = pain[1] +"."+ pain[0];
+                einzutragen.Date = refacDate;
             }
-            else { einzutragen.Date = "Kein Zeitlimit"; }
+            else { einzutragen.Date = " Kein Zeitlimit"; }
             _checkbox.Add(einzutragen);
             Umsortieren();
             SaveTaskList();
@@ -276,6 +287,32 @@ namespace ViewModel
             _checkbox.Clear();
             SaveTaskList();
             RaisePropertyChanged("Checkboxes");
+        }
+        private void Erinnerung()
+        {
+            bool erinnerung = false;
+            List<String> reminderList = new List<String>();
+            string currentDate = DateTime.Now.ToString("d/M");
+            foreach (_saves.Saves items in _checkbox)
+            {
+                if(items.Date == currentDate)
+                {
+                    reminderList.Add(items.MyTask);
+                    erinnerung = true;
+                }
+            }
+            if (erinnerung == true) {
+                string messageBoxText = "Hier sind deine Heutigen Aufgaben";
+                string caption = "Deine Aufgaben für Heute:" + "   ";
+                MessageBoxButton button = MessageBoxButton.OK;
+                MessageBoxImage icon = MessageBoxImage.Information;
+                foreach (String item in reminderList)
+                {
+                    caption += item + "   ";
+                }
+                MessageBox.Show(caption, messageBoxText, MessageBoxButton.OK, icon);
+            }
+            
         }
     }
 }

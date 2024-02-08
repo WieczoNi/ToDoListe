@@ -10,7 +10,7 @@
     <Window.DataContext>
         <ViewModel:ViewModel/>
     </Window.DataContext>
-    
+
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -95,12 +95,13 @@
                                   IsChecked="{Binding Erledigt}" 
                                   TabIndex="{Binding TabIndex}" 
                                   Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.Angehakt}"
-                                  FontSize="18" Cursor=""/>
+                                  FontSize="18" Cursor=""
+                                  ToolTip="{Binding Date}"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
             <CheckBox Content="Lokale Datenbank" Margin="0,0,253,-2" Grid.Row="4" Background="Gainsboro" Height="18" VerticalAlignment="Bottom" IsChecked="{Binding useDatabase, Mode=TwoWay}" Command="{Binding LocalDB}" HorizontalAlignment="Right" Width="117"/>
-            <DatePicker HorizontalAlignment="Right" Margin="0,0,241,22" Grid.Row="4" VerticalAlignment="Bottom" Background="#FFBDBDBD" Foreground="Black" BorderBrush="Black" FirstDayOfWeek="Monday" IsTodayHighlighted="True" SelectedDate="{Binding selectedDate, Mode=OneWayToSource}"/>
+            <DatePicker HorizontalAlignment="Right" Margin="0,0,186,22" Grid.Row="4" VerticalAlignment="Bottom" Background="#FFBDBDBD" Foreground="Black" BorderBrush="Black" FirstDayOfWeek="Monday" IsTodayHighlighted="True" SelectedDate="{Binding selectedDate, Mode=OneWayToSource}" SelectedDateFormat="Long" Width="183"/>
 
         </Grid>
     </Grid>
