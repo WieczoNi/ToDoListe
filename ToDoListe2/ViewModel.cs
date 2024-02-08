@@ -1,38 +1,23 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Reflection.Emit;
 using System.Text.Json;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using ToDoListe2;
-using Z.BulkOperations;
 namespace ViewModel
 {
     public class ViewModel : ViewBase, INotifyPropertyChanged
     {
-        
         public ViewModel()
         {
             ReadSavedTasks();
         }
-
-        public bool useDatabase { get; set; }
-
-        
-
+        public bool useDatabase { get; set; } //Gebunden an die Checkbox im View
 
         private List<_saves.Saves> _checkbox = new List<_saves.Saves> { };
-
-
-        public ObservableCollection<_saves.Saves> Checkboxes
+        public ObservableCollection<_saves.Saves> Checkboxes //Konvertierung von Liste zu ObservabelCollection. Nicht die eleganteste Lösung, aber ObservableCollections haben Probleme beim Serialisieren, und Listen haben Probleme bei ItemSource
         {
             get
             {
@@ -60,7 +45,8 @@ namespace ViewModel
 
         private void ReadSavedTasks()
         {  
-            if(useDatabase != true) { 
+        if(useDatabase != true) 
+            { 
             List<_saves.Saves> meineAufgaben = new List<_saves.Saves>();
             if (File.Exists(@"path.json"))
             {
@@ -76,15 +62,15 @@ namespace ViewModel
                 }
             }
             Umsortieren();
-                }
-            else
+        }
+        else
+        {
+        using var db = new DatabaseModels.SavesContext();
             {
-                using var db = new DatabaseModels.SavesContext();
-                {
-                    _checkbox = db.mySaves.ToList<_saves.Saves>();
-                    Umsortieren();
-                }
+            _checkbox = db.mySaves.ToList<_saves.Saves>();
+            Umsortieren();
             }
+        }
         }
         private void PerformAngehakt()
         {Umsortieren(); SaveTaskList();}
@@ -209,12 +195,11 @@ namespace ViewModel
             }
         }
         public string aufgabeTextbox { get; set; }
-        private void PerformLocalDB()
+        private void PerformLocalDB() //Wenn die Checkbox geklickt wird, setze _checkbox zurück, und lese von der Datenbank, sollte IsChecked == true, ansonsten lese von der JSON
         {
             _checkbox.Clear();
             ReadSavedTasks();
         }
-
         private void PerformAddNewTask()
         {
             int anzahl = Checkboxes.Count;
@@ -227,7 +212,6 @@ namespace ViewModel
             SaveTaskList();
             RaisePropertyChanged("Checkboxes");
         }
-
         private void PerformDelDoneTasks()
         {
             List<int> delList = new List<int> { };
@@ -244,14 +228,11 @@ namespace ViewModel
             RaisePropertyChanged("Checkboxes");
             SaveTaskList();
         }
-
         private void PerformDelAllTasks() //_checkbox wird geleert, und es wird gespeichert
         {
             _checkbox.Clear();
             SaveTaskList();
             RaisePropertyChanged("Checkboxes");
         }
-        
-
     }
 }
