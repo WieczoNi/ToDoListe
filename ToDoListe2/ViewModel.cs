@@ -19,13 +19,13 @@ namespace ViewModel
         }
         public bool useDatabase { get; set; } //Gebunden an die Checkbox im View
 
-        private List<_saves.Saves> _checkbox = new List<_saves.Saves> { };
+        private List<_saves.Saves> aufgabenListe = new List<_saves.Saves> { };
         public ObservableCollection<_saves.Saves> Checkboxes //Konvertierung von Liste zu ObservabelCollection. Nicht die eleganteste Lösung, aber ObservableCollections haben Probleme beim Serialisieren, und Listen haben Probleme bei ItemSource
         {
             get
             {
                 ObservableCollection<_saves.Saves> tempBox = new ObservableCollection<_saves.Saves>();
-                foreach (_saves.Saves item in _checkbox)
+                foreach (_saves.Saves item in aufgabenListe)
                 {
                     tempBox.Add(item);
                 }
@@ -50,18 +50,17 @@ namespace ViewModel
         {
             if (useDatabase != true)
             {
-                List<_saves.Saves> meineAufgaben = new List<_saves.Saves>();
+                
                 if (File.Exists(@"path.json"))
                 {
                     string savesJson = File.ReadAllText(@"path.json");
                     var option = new JsonSerializerOptions() { IncludeFields = true };
-                    meineAufgaben = JsonSerializer.Deserialize<List<_saves.Saves>>(savesJson, option);
+                    List<_saves.Saves> meineAufgaben = JsonSerializer.Deserialize<List<_saves.Saves>>(savesJson, option);
 
                     foreach (_saves.Saves savedItems in meineAufgaben)
                     {
-                        _saves.Saves newItem = new _saves.Saves();
-                        newItem = savedItems;
-                        _checkbox.Add(newItem);
+                        _saves.Saves newItem = savedItems;
+                        aufgabenListe.Add(newItem);
                     }
                 }
                 Umsortieren();
@@ -70,7 +69,7 @@ namespace ViewModel
             {
                 using var db = new DatabaseModels.SavesContext();
                 {
-                    _checkbox = db.SavedDB.ToList<_saves.Saves>();
+                    aufgabenListe = db.SavedDB.ToList<_saves.Saves>();
                     Umsortieren();
                 }
             }
@@ -84,7 +83,7 @@ namespace ViewModel
             {
                 var meineAufgaben = new List<_saves.Saves> { };
                 var options = new JsonSerializerOptions() { IncludeFields = true, };
-                foreach (_saves.Saves aufgabe in _checkbox)
+                foreach (_saves.Saves aufgabe in aufgabenListe)
                 {
                     var newItem = new _saves.Saves();
                     newItem = aufgabe;
@@ -101,7 +100,7 @@ namespace ViewModel
                     {
                         db.Remove(saves);
                     }
-                    foreach (_saves.Saves item in _checkbox)
+                    foreach (_saves.Saves item in aufgabenListe)
                     {
                         db.Add(item);
                     }
@@ -112,24 +111,16 @@ namespace ViewModel
 
         private void Umsortieren()
         {
-            int anzahl = 0;
-            foreach (_saves.Saves aufgabe in _checkbox)
+            foreach (_saves.Saves aufgabe in aufgabenListe)
             {
                 if (aufgabe.Erledigt == true)
 
                 {
-                    aufgabe.TabIndex = aufgabe.TabIndex + _checkbox.Count;
                     aufgabe.DueDateString = "Schon Fertig";
                     aufgabe.DueDate = DateTime.MaxValue;
                 }
-                else
-                {
-                    aufgabe.TabIndex = anzahl;
-                    anzahl++;
-                }
-
             }
-            _checkbox.Sort((x, y) => DateTime.Compare(x.DueDate ?? DateTime.Now, y.DueDate ?? DateTime.Now));
+            aufgabenListe.Sort((x, y) => DateTime.Compare(x.DueDate ?? DateTime.Now, y.DueDate ?? DateTime.Now));
             RaisePropertyChanged("Checkboxes");
             SaveTaskList();
         }
@@ -203,20 +194,13 @@ namespace ViewModel
         }
         public string aufgabeTextbox { get; set; }
         public Nullable<DateTime> selectedDate { get; set; }
-        private void PerformLocalDB() //Wenn die Checkbox geklickt wird, setze _checkbox zurück, und lese von der Datenbank, sollte IsChecked == true, ansonsten lese von der JSON
+        private void PerformLocalDB() //Wenn die Checkbox geklickt wird, setze aufgabenListe zurück, und lese von der Datenbank, sollte IsChecked == true, ansonsten lese von der JSON
         {
-            string messageBoxText = "Willst du deine Änderungen speichern?";
-            string caption = "Speichern";
-            MessageBoxButton button = MessageBoxButton.YesNo;
-            MessageBoxImage icon = MessageBoxImage.Warning;
-            MessageBoxResult result;
-
-            result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+            MessageBoxResult result = MessageBox.Show("Willst du deine Änderungen speichern?", "Speichern", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.Yes);
             if (result == MessageBoxResult.Yes)
             {
-                _checkbox.Clear();
+                aufgabenListe.Clear();
                 ReadSavedTasks();
-
             }
             else
             {
@@ -235,7 +219,7 @@ namespace ViewModel
                         File.Delete(@"path.json");
                     }
                 }
-                _checkbox.Clear();
+                aufgabenListe.Clear();
                 ReadSavedTasks();
             }
 
@@ -246,53 +230,45 @@ namespace ViewModel
         }
         private void PerformAddNewTask()
         {
-            int anzahl = Checkboxes.Count;
-            anzahl++;
+
             _saves.Saves einzutragen = new _saves.Saves();
             einzutragen.MyTask = aufgabeTextbox;
-            einzutragen.TabIndex = anzahl;
             if (selectedDate != null)
             {
                 einzutragen.DueDate = selectedDate;
                 einzutragen.DueDateString = DateTime.Parse(selectedDate.ToString()).ToString("d/M/yyyy");
             }
             else { einzutragen.DueDateString = " Kein Zeitlimit"; einzutragen.DueDate = DateTime.Parse("30.12.2999"); }
-            _checkbox.Add(einzutragen);
+            aufgabenListe.Add(einzutragen);
             Umsortieren();
             SaveTaskList();
             RaisePropertyChanged("Checkboxes");
         }
         private void PerformDelDoneTasks()
         {
-            List<int> delList = new List<int> { };
-            foreach (_saves.Saves item in _checkbox)
+            List<_saves.Saves> delList = aufgabenListe.Where(a => a.Erledigt == true).ToList();
+            foreach (_saves.Saves item in delList)
             {
-
-                if (item.Erledigt == true)
-                {
-                    delList.Add(item.TabIndex);
-                }
+                aufgabenListe.Remove(item);
             }
-            _checkbox.RemoveAll(r => delList.Any(a => a == r.TabIndex));
             RaisePropertyChanged("Checkboxes");
             SaveTaskList();
         }
-        private void PerformDelAllTasks() //_checkbox wird geleert, und es wird gespeichert
+        private void PerformDelAllTasks() //aufgabenListe wird geleert, und es wird gespeichert
         {
-            _checkbox.Clear();
+            aufgabenListe.Clear();
             SaveTaskList();
             RaisePropertyChanged("Checkboxes");
         }
         private void Erinnerung()
         {
-            string caption = "Deine Aufgaben für Heute:";
-            List<_saves.Saves> dueToday = _checkbox.Where(s => s.DueDate < DateTime.Now).ToList();
+            string caption = "Das musst du Heute erledigen:";
+            List<_saves.Saves> dueToday = aufgabenListe.Where(s => s.DueDate < DateTime.Now).ToList();
             foreach (_saves.Saves item in dueToday)
             {
                 caption += Environment.NewLine + item.MyTask;
             }
-            MessageBoxImage icon = MessageBoxImage.Information;
-            MessageBox.Show(caption, "Deine Aufgaben", MessageBoxButton.OK, icon);
+            MessageBox.Show(caption, "Deine Aufgaben", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }
