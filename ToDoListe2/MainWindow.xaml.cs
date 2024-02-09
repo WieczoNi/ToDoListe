@@ -20,7 +20,6 @@ namespace ToDoListe2
         public MainWindow()
         {
             InitializeComponent();
-            
         }
     }
 }

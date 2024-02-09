@@ -19,19 +19,18 @@ namespace ViewModel
         }
         public bool useDatabase { get; set; } //Gebunden an die Checkbox im View
 
-        private List<_saves.Saves> aufgabenListe = new List<_saves.Saves> { };
+        private List<_saves.Saves> aufgabenListe = [];
         public ObservableCollection<_saves.Saves> Checkboxes //Konvertierung von Liste zu ObservabelCollection. Nicht die eleganteste Lösung, aber ObservableCollections haben Probleme beim Serialisieren, und Listen haben Probleme bei ItemSource
         {
             get
             {
-                ObservableCollection<_saves.Saves> tempBox = new ObservableCollection<_saves.Saves>();
-                foreach (_saves.Saves item in aufgabenListe)
-                {
-                    tempBox.Add(item);
-                }
+                ObservableCollection<_saves.Saves> tempBox = [.. aufgabenListe];
                 return tempBox;
             }
-            set { Checkboxes = value; }
+            set
+            {
+                Checkboxes = value;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -39,22 +38,19 @@ namespace ViewModel
         private void RaisePropertyChanged(string propertyName)
         {
             // take a copy to prevent thread issues
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void ReadSavedTasks()
         {
             if (useDatabase != true)
             {
-                
+
                 if (File.Exists(@"path.json"))
                 {
                     string savesJson = File.ReadAllText(@"path.json");
-                    var option = new JsonSerializerOptions() { IncludeFields = true };
+                    JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { IncludeFields = true };
+                    var option = jsonSerializerOptions;
                     List<_saves.Saves> meineAufgaben = JsonSerializer.Deserialize<List<_saves.Saves>>(savesJson, option);
 
                     foreach (_saves.Saves savedItems in meineAufgaben)
@@ -69,7 +65,7 @@ namespace ViewModel
             {
                 using var db = new DatabaseModels.SavesContext();
                 {
-                    aufgabenListe = db.SavedDB.ToList<_saves.Saves>();
+                    aufgabenListe = [.. db.SavedDB];
                     Umsortieren();
                 }
             }
@@ -82,7 +78,7 @@ namespace ViewModel
             if (useDatabase != true)
             {
                 var meineAufgaben = new List<_saves.Saves> { };
-                var options = new JsonSerializerOptions() { IncludeFields = true, };
+                JsonSerializerOptions options = new() { IncludeFields = true, };
                 foreach (_saves.Saves aufgabe in aufgabenListe)
                 {
                     var newItem = new _saves.Saves();
@@ -135,10 +131,7 @@ namespace ViewModel
         {
             get
             {
-                if (delDoneTasks == null)
-                {
-                    delDoneTasks = new RelayCommand(PerformDelDoneTasks);
-                }
+                delDoneTasks ??= new RelayCommand(PerformDelDoneTasks);
 
                 return delDoneTasks;
             }
@@ -147,10 +140,7 @@ namespace ViewModel
         {
             get
             {
-                if (localDB == null)
-                {
-                    localDB = new RelayCommand(PerformLocalDB);
-                }
+                localDB ??= new RelayCommand(PerformLocalDB);
 
                 return localDB;
             }
@@ -159,10 +149,7 @@ namespace ViewModel
         {
             get
             {
-                if (angehakt == null)
-                {
-                    angehakt = new RelayCommand(PerformAngehakt);
-                }
+                angehakt ??= new RelayCommand(PerformAngehakt);
 
                 return angehakt;
             }
@@ -171,10 +158,7 @@ namespace ViewModel
         {
             get
             {
-                if (delAllTasks == null)
-                {
-                    delAllTasks = new RelayCommand(PerformDelAllTasks);
-                }
+                delAllTasks ??= new RelayCommand(PerformDelAllTasks);
 
                 return delAllTasks;
             }
@@ -184,10 +168,7 @@ namespace ViewModel
         {
             get
             {
-                if (addNewTask == null)
-                {
-                    addNewTask = new RelayCommand(PerformAddNewTask);
-                }
+                addNewTask ??= new RelayCommand(PerformAddNewTask);
 
                 return addNewTask;
             }
