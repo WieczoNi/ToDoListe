@@ -1,10 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -17,7 +13,7 @@ namespace ViewModel
     {
         public ViewModel()
         {
-            if (File.Exists(@"usedb.json")){ if (File.ReadAllText(@"usedb.json") == "true") { useDatabase = true; } else { useDatabase = false; } }
+            if (File.Exists(@"usedb.json")) { if (File.ReadAllText(@"usedb.json") == "true") { useDatabase = true; } else { useDatabase = false; } }
             ReadSavedTasks();
             Erinnerung();
         }
@@ -51,36 +47,36 @@ namespace ViewModel
         }
 
         private void ReadSavedTasks()
-        {  
-        if(useDatabase != true) 
-            { 
-            List<_saves.Saves> meineAufgaben = new List<_saves.Saves>();
-            if (File.Exists(@"path.json"))
+        {
+            if (useDatabase != true)
             {
-                string savesJson = File.ReadAllText(@"path.json");
-                var option = new JsonSerializerOptions() { IncludeFields = true };
-                meineAufgaben = JsonSerializer.Deserialize<List<_saves.Saves>>(savesJson, option);
-
-                foreach (_saves.Saves savedItems in meineAufgaben)
+                List<_saves.Saves> meineAufgaben = new List<_saves.Saves>();
+                if (File.Exists(@"path.json"))
                 {
-                    _saves.Saves newItem = new _saves.Saves();
-                    newItem = savedItems;
-                    _checkbox.Add(newItem);
+                    string savesJson = File.ReadAllText(@"path.json");
+                    var option = new JsonSerializerOptions() { IncludeFields = true };
+                    meineAufgaben = JsonSerializer.Deserialize<List<_saves.Saves>>(savesJson, option);
+
+                    foreach (_saves.Saves savedItems in meineAufgaben)
+                    {
+                        _saves.Saves newItem = new _saves.Saves();
+                        newItem = savedItems;
+                        _checkbox.Add(newItem);
+                    }
+                }
+                Umsortieren();
+            }
+            else
+            {
+                using var db = new DatabaseModels.SavesContext();
+                {
+                    _checkbox = db.SavedDB.ToList<_saves.Saves>();
+                    Umsortieren();
                 }
             }
-            Umsortieren();
-        }
-        else
-        {
-        using var db = new DatabaseModels.SavesContext();
-            {
-            _checkbox = db.SavedDB.ToList<_saves.Saves>();
-            Umsortieren();
-            }
-        }
         }
         private void PerformAngehakt()
-        {Umsortieren(); SaveTaskList();}
+        { Umsortieren(); SaveTaskList(); }
 
         private void SaveTaskList()
         {
@@ -107,7 +103,7 @@ namespace ViewModel
                     }
                     foreach (_saves.Saves item in _checkbox)
                     {
-                        db.Add(item); 
+                        db.Add(item);
                     }
                     db.SaveChanges();
                 }
@@ -126,11 +122,12 @@ namespace ViewModel
                     aufgabe.DueDateString = "Schon Fertig";
                     aufgabe.DueDate = DateTime.MaxValue;
                 }
-                else {
+                else
+                {
                     aufgabe.TabIndex = anzahl;
                     anzahl++;
                 }
-                
+
             }
             _checkbox.Sort((x, y) => DateTime.Compare(x.DueDate ?? DateTime.Now, y.DueDate ?? DateTime.Now));
             RaisePropertyChanged("Checkboxes");
@@ -242,7 +239,7 @@ namespace ViewModel
                 ReadSavedTasks();
             }
 
-            if(useDatabase == true) { File.WriteAllText(@"usedb.json", "true"); }
+            if (useDatabase == true) { File.WriteAllText(@"usedb.json", "true"); }
             else { File.WriteAllText(@"usedb.json", "false"); }
 
 
@@ -259,7 +256,7 @@ namespace ViewModel
                 einzutragen.DueDate = selectedDate;
                 einzutragen.DueDateString = DateTime.Parse(selectedDate.ToString()).ToString("d/M/yyyy");
             }
-            else { einzutragen.DueDateString = " Kein Zeitlimit"; einzutragen.DueDate = DateTime.Parse("30.12.2999");}
+            else { einzutragen.DueDateString = " Kein Zeitlimit"; einzutragen.DueDate = DateTime.Parse("30.12.2999"); }
             _checkbox.Add(einzutragen);
             Umsortieren();
             SaveTaskList();
@@ -288,14 +285,13 @@ namespace ViewModel
         }
         private void Erinnerung()
         {
-            List<_saves.Saves> dueToday = _checkbox.Where(s => s.DueDate < DateTime.Now).ToList();
-            
             string caption = "Deine Aufgaben für Heute:";
+            List<_saves.Saves> dueToday = _checkbox.Where(s => s.DueDate < DateTime.Now).ToList();
             foreach (_saves.Saves item in dueToday)
             {
                 caption += Environment.NewLine + item.MyTask;
             }
-            MessageBoxImage icon = MessageBoxImage.Information;        
+            MessageBoxImage icon = MessageBoxImage.Information;
             MessageBox.Show(caption, "Deine Aufgaben", MessageBoxButton.OK, icon);
         }
     }
