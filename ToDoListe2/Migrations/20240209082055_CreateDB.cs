@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -11,7 +12,7 @@ namespace ToDoListe2.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Saved",
+                name: "SavedDB",
                 columns: table => new
                 {
                     ID = table.Column<int>(type: "INTEGER", nullable: false)
@@ -19,11 +20,12 @@ namespace ToDoListe2.Migrations
                     MyTask = table.Column<string>(type: "TEXT", nullable: false),
                     Erledigt = table.Column<bool>(type: "INTEGER", nullable: false),
                     TabIndex = table.Column<int>(type: "INTEGER", nullable: false),
-                    Date = table.Column<string>(type: "TEXT", nullable: false)
+                    DueDateString = table.Column<string>(type: "TEXT", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Saved", x => x.ID);
+                    table.PrimaryKey("PK_SavedDB", x => x.ID);
                 });
         }
 
@@ -31,7 +33,7 @@ namespace ToDoListe2.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Saved");
+                name: "SavedDB");
         }
     }
 }

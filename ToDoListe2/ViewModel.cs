@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
@@ -72,7 +74,7 @@ namespace ViewModel
         {
         using var db = new DatabaseModels.SavesContext();
             {
-            _checkbox = db.Saved.ToList<_saves.Saves>();
+            _checkbox = db.SavedDB.ToList<_saves.Saves>();
             Umsortieren();
             }
         }
@@ -99,7 +101,7 @@ namespace ViewModel
             {
                 using var db = new DatabaseModels.SavesContext();
                 {
-                    foreach (_saves.Saves saves in db.Saved)
+                    foreach (_saves.Saves saves in db.SavedDB)
                     {
                         db.Remove(saves);
                     }
@@ -121,14 +123,16 @@ namespace ViewModel
 
                 {
                     aufgabe.TabIndex = aufgabe.TabIndex + _checkbox.Count;
-                    aufgabe.Date = "  Schon Fertig";
-
+                    aufgabe.DueDateString = "Schon Fertig";
+                    aufgabe.DueDate = DateTime.MaxValue;
                 }
                 else {
                     aufgabe.TabIndex = anzahl;
                     anzahl++;
                 }
+                
             }
+            _checkbox.Sort((x, y) => DateTime.Compare(x.DueDate ?? DateTime.Now, y.DueDate ?? DateTime.Now));
             RaisePropertyChanged("Checkboxes");
             SaveTaskList();
         }
@@ -201,7 +205,7 @@ namespace ViewModel
             }
         }
         public string aufgabeTextbox { get; set; }
-        public string selectedDate { get; set; }
+        public Nullable<DateTime> selectedDate { get; set; }
         private void PerformLocalDB() //Wenn die Checkbox geklickt wird, setze _checkbox zurück, und lese von der Datenbank, sollte IsChecked == true, ansonsten lese von der JSON
         {
             string messageBoxText = "Willst du deine Änderungen speichern?";
@@ -223,10 +227,7 @@ namespace ViewModel
                 {
                     using var db = new DatabaseModels.SavesContext();
                     {
-                        foreach (_saves.Saves saves in db.Saved)
-                        {
-                            db.Remove(saves);
-                        }
+                        db.RemoveRange(db.SavedDB);
                         db.SaveChanges();
                     }
                 }
@@ -255,12 +256,10 @@ namespace ViewModel
             einzutragen.TabIndex = anzahl;
             if (selectedDate != null)
             {
-                string[] pain = selectedDate.Split('/');
-                pain[2].Remove(2);
-                string refacDate = pain[1] +"."+ pain[0];
-                einzutragen.Date = refacDate;
+                einzutragen.DueDate = selectedDate;
+                einzutragen.DueDateString = DateTime.Parse(selectedDate.ToString()).ToString("d/M/yyyy");
             }
-            else { einzutragen.Date = " Kein Zeitlimit"; }
+            else { einzutragen.DueDateString = " Kein Zeitlimit"; einzutragen.DueDate = DateTime.Parse("30.12.2999");}
             _checkbox.Add(einzutragen);
             Umsortieren();
             SaveTaskList();
@@ -275,7 +274,6 @@ namespace ViewModel
                 if (item.Erledigt == true)
                 {
                     delList.Add(item.TabIndex);
-
                 }
             }
             _checkbox.RemoveAll(r => delList.Any(a => a == r.TabIndex));
@@ -290,29 +288,15 @@ namespace ViewModel
         }
         private void Erinnerung()
         {
-            bool erinnerung = false;
-            List<String> reminderList = new List<String>();
-            string currentDate = DateTime.Now.ToString("d/M");
-            foreach (_saves.Saves items in _checkbox)
-            {
-                if(items.Date == currentDate)
-                {
-                    reminderList.Add(items.MyTask);
-                    erinnerung = true;
-                }
-            }
-            if (erinnerung == true) {
-                string messageBoxText = "Hier sind deine Heutigen Aufgaben";
-                string caption = "Deine Aufgaben für Heute:" + "   ";
-                MessageBoxButton button = MessageBoxButton.OK;
-                MessageBoxImage icon = MessageBoxImage.Information;
-                foreach (String item in reminderList)
-                {
-                    caption += item + "   ";
-                }
-                MessageBox.Show(caption, messageBoxText, MessageBoxButton.OK, icon);
-            }
+            List<_saves.Saves> dueToday = _checkbox.Where(s => s.DueDate < DateTime.Now).ToList();
             
+            string caption = "Deine Aufgaben für Heute:";
+            foreach (_saves.Saves item in dueToday)
+            {
+                caption += Environment.NewLine + item.MyTask;
+            }
+            MessageBoxImage icon = MessageBoxImage.Information;        
+            MessageBox.Show(caption, "Deine Aufgaben", MessageBoxButton.OK, icon);
         }
     }
 }

@@ -17,7 +17,8 @@ namespace ToDoListe2
             public string MyTask { get; set; }
             public bool Erledigt { get; set; }
             public int TabIndex { get; set; }
-            public string Date { get; set; }
+            public string DueDateString { get; set; }
+            public Nullable<DateTime> DueDate { get; set; }
         }
     }
 }

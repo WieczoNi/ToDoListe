@@ -15,8 +15,7 @@ namespace ToDoListe2
         public class SavesContext : DbContext
         {
 
-            public DbSet<_saves.Saves> Saved { get; set; }
-
+            public DbSet<_saves.Saves> SavedDB { get; set; }
             public string DbPath { get; }
             public SavesContext()
             {
